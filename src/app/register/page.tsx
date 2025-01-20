@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+
 const Register: React.FC = () => {
   const router = useRouter();
   const [step, setStep] = useState<"register" | "otp" | "location">("register");
@@ -104,31 +105,84 @@ const Register: React.FC = () => {
   const handleLocationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+  
     try {
       const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
-        alert(errorData.error || "Registration failed"); // Show the error to the user via alert
+        alert(errorData.error || "Registration failed");
         throw new Error(errorData.error || "Registration failed");
       }
-
+  
       const data = await response.json();
       console.log("User Registered:", data);
-      // Redirect after successful registration
-      // router.push("/dashboard"); 
+  
+      // Construct query string using URLSearchParams
+      const queryParams = new URLSearchParams({
+        username: userData.username,
+        country: userData.country,
+        state: userData.state,
+        district: userData.district,
+        area: userData.area,
+      }).toString();
+  
+      // Redirect with query parameters
+      router.push(`/appcom?${queryParams}`);
     } catch (error) {
       alert("Registration Error");
     } finally {
       setLoading(false);
     }
   };
+  
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+  
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginData),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.error || "Invalid credentials");
+        return;
+      }
+  
+      const data = await response.json();
+      console.log("User Logged In:", data);
+  
+      // Store user session (replace with NextAuth if needed)
+      localStorage.setItem("user", JSON.stringify(data.user));
+  
+      // Construct query string using URLSearchParams
+      const queryParams = new URLSearchParams({
+        username: data.user.username,
+        country: data.user.country,
+        state: data.user.state,
+        district: data.user.district,
+        area: data.user.area,
+      }).toString();
+  
+      console.log(data.user); 
 
+      router.push(`/appcom?${queryParams} `);
+    } catch (error) {
+      alert("Login Error");
+      alert("Login failed, please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-white text-black">
       <div className="flex flex-col md:flex-row items-center justify-center gap-10">
@@ -290,41 +344,48 @@ const Register: React.FC = () => {
             </TabsContent>
             {/* Login Form */}
             <TabsContent value="login">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-center text-xl font-semibold">
-                    Login
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={loginData.email}
-                      onChange={handleLoginChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      value={loginData.password}
-                      onChange={handleLoginChange}
-                      required
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full">Login</Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
+  <Card>
+    <CardHeader>
+      <CardTitle className="text-center text-xl font-semibold">
+        Login
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          value={loginData.email}
+          onChange={handleLoginChange}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          value={loginData.password}
+          onChange={handleLoginChange}
+          required
+        />
+      </div>
+    </CardContent>
+    <CardFooter>
+      <Button 
+        className="w-full"
+        onClick={handleLoginSubmit} // Ensure this triggers the login submission
+        disabled={loading}
+      >
+        {loading ? "Logging in..." : "Login"}
+      </Button>
+    </CardFooter>
+  </Card>
+</TabsContent>
+
           </Tabs>
         </div>
       </div>

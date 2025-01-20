@@ -13,7 +13,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Router } from "next/router";
+import { useSearchParams  } from "next/navigation";
 import Create from "./appmain/Create";
 
 // Define type for navigation links
@@ -24,6 +24,9 @@ type NavLink = {
 };
 
 export default function Application() {
+  const searchParams = useSearchParams(); // Get searchParams instance
+  const username = searchParams?.get("username") || "Guest"; // Extract username and provide a fallback
+
   const navLinks: NavLink[] = [
     {
       label: "Create",
@@ -53,7 +56,6 @@ export default function Application() {
         <IconMessageChatbot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
-
   ];
 
   const [open, setOpen] = useState(false);
@@ -85,7 +87,7 @@ export default function Application() {
           <div>
             <SidebarLink
               link={{
-                label: "User 1",
+                label: username ? username.toString() : "User",
                 href: "#",
                 icon: (
                   <Image
@@ -133,15 +135,13 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedSection }) => {
   return (
     <div className="flex flex-1">
       <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
-      {selectedSection === "Med AI" ? (
+        {selectedSection === "Create" ? (
           <Create /> // Should render here
         ) : selectedSection === "Explore" ? (
           <h1>Hello</h1>
         ) : (
           <DefaultContent />
-        )
-}
-
+        )}
       </div>
     </div>
   );

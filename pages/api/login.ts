@@ -1,8 +1,8 @@
-// pages/api/login.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
+import { SignJWT } from "jose";
+import { TextEncoder } from "util"; // For converting secret to Uint8Array
 
 const prisma = new PrismaClient();
 
@@ -21,42 +21,56 @@ export default async function handler(
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // 🔍 Find user by email in the database
     const user = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        password:true,
+        username: true,
+        country: true,     // Include country
+        state: true,       // Include state
+        district: true,    // Include district
+        area: true         // Include area
+      }
     });
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // 🔑 Compare hashed password with input password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email, username: user.username },
-      process.env.JWT_SECRET as string, 
-      { expiresIn: "7d" }
-    );
+    // Create the JWT token using `jose`
+    const secret = process.env.JWT_SECRET as string;
+    const encoder = new TextEncoder();
+    const jwt = await new SignJWT({ id: user.id, email: user.email })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('7d')
+      .sign(encoder.encode(secret));
 
+    // Set token as a cookie
+    res.setHeader("Set-Cookie", `token=${jwt}; HttpOnly; Path=/; Max-Age=604800;`);
+
+    // Return user data with all details including country, state, etc.
     return res.status(200).json({
       user: {
         id: user.id,
-        username: user.username,
         email: user.email,
+        username: user.username,
         country: user.country,
         state: user.state,
         district: user.district,
         area: user.area,
-        createdAt: user.createdAt,
       },
-      token,
+      token: jwt,
     });
   } catch (error) {
-    console.error("API Login Error:", error);
+    console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
