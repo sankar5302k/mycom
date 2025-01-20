@@ -58,7 +58,7 @@ export default function Application() {
 
   const [open, setOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState<NavLink["label"]>(
-    "MarketPlace"
+    "Create"
   );
 
   return (
@@ -133,9 +133,9 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedSection }) => {
   return (
     <div className="flex flex-1">
       <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
-      {selectedSection === "Portfolios" ? (
+      {selectedSection === "Med AI" ? (
           <Create /> // Should render here
-        ) : selectedSection === "Domain.AI" ? (
+        ) : selectedSection === "Explore" ? (
           <h1>Hello</h1>
         ) : (
           <DefaultContent />

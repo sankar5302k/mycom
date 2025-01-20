@@ -17,9 +17,7 @@ interface SidebarContextProps {
   animate: boolean;
 }
 
-const SidebarContext = createContext<SidebarContextProps | undefined>(
-  undefined
-);
+const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
@@ -46,7 +44,7 @@ export const SidebarProvider = ({
   const setOpen = setOpenProp !== undefined ? setOpenProp : setOpenState;
 
   return (
-    <SidebarContext.Provider value={{ open, setOpen, animate: animate }}>
+    <SidebarContext.Provider value={{ open, setOpen, animate }}>
       {children}
     </SidebarContext.Provider>
   );
@@ -115,7 +113,7 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden  items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
+          "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
         )}
         {...props}
       >
@@ -155,24 +153,29 @@ export const MobileSidebar = ({
   );
 };
 
+interface SidebarLinkProps {
+  link: Links;
+  className?: string;
+  onClick?: () => void; // Add onClick prop here to handle the section selection
+  props?: LinkProps;
+}
+
 export const SidebarLink = ({
   link,
   className,
+  onClick, // Accept onClick here
   ...props
-}: {
-  link: Links;
-  className?: string;
-  props?: LinkProps;
-}) => {
+}: SidebarLinkProps) => {
   const { open, animate } = useSidebar();
   return (
     <Link
       href={link.href}
       className={cn(
-        "flex items-center justify-start gap-2  group/sidebar py-2",
+        "flex items-center justify-start gap-2 group/sidebar py-2",
         className
       )}
       {...props}
+      onClick={onClick} // Ensure onClick is passed through to the Link
     >
       {link.icon}
 
