@@ -106,7 +106,7 @@ export default function Application() {
   );
 }
 
-export const Logo = () => {
+const Logo = () => {
   return (
     <Link
       href="#"
