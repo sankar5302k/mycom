@@ -1,0 +1,18 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "next.config.js",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "package.json",
+        "use": "@vercel/static-build"
+      }
+    ],
+    "hooks": {
+      "build": "npx prisma generate"
+    },
+    "outputDirectory": "out"
+  }
+  
