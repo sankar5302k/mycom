@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // or "mysql", "sqlite"
+  url      = "prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiMzMyZGUwMTYtZjk0ZS00ZWFiLTk3ZjItZWQxZTkyNTY3ODVkIiwidGVuYW50X2lkIjoiOWI2YWQyNDYzMjMxZjA2NGU5YTc3ODcxM2Q5M2Q4ZGE3ODg4YzAwMDdjYzJkZGE4ZWY0MTM4MTA4OWQ3N2YxMCIsImludGVybmFsX3NlY3JldCI6IjUwY2UxYzg1LTlhMDQtNGY4NS1hMzI2LThmOTBlYzc0NWI0ZSJ9.0Ta9NfRRQdGPcMsDS-vvum5v2X7Qoli6VmDKQPYwLx0"
+}
+
+model User {
+  id        String  @id @default(uuid()) // Unique identifier
+  username  String  @unique
+  email     String  @unique
+  password  String  // Hashed password
+  country   String
+  state     String
+  district  String
+  area      String
+  createdAt DateTime @default(now())
+}
