@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "../../components/ui/sidebar";
 import {
   IconBuildingStore,
@@ -13,7 +13,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { useSearchParams  } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Create from "./appmain/Create";
 
 // Define type for navigation links
@@ -59,9 +59,7 @@ export default function Application() {
   ];
 
   const [open, setOpen] = useState(false);
-  const [selectedSection, setSelectedSection] = useState<NavLink["label"]>(
-    "Create"
-  );
+  const [selectedSection, setSelectedSection] = useState<NavLink["label"]>("Create");
 
   return (
     <div
@@ -103,7 +101,9 @@ export default function Application() {
           </div>
         </SidebarBody>
       </Sidebar>
-      <Dashboard selectedSection={selectedSection} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Dashboard selectedSection={selectedSection} />
+      </Suspense>
     </div>
   );
 }
