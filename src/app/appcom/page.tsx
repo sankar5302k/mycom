@@ -14,7 +14,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Router } from "next/router";
-import Create from "./appmain/create";
+import Create from "./appmain/Create";
 
 // Define type for navigation links
 type NavLink = {
