@@ -1,13 +1,17 @@
 "use client";
 import React, { useState } from "react";
-import { IconPlus, IconUser, IconShieldLock } from "@tabler/icons-react";
+import { IconPlus } from "@tabler/icons-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 type DiscussionType = "anonymous" | "public" | "";
-
-function Create() {
-  const [activeDiscussion, setActiveDiscussion] = useState<DiscussionType>("");
+type CreateProps = {
+    username: string; // Define prop type
+  };
+const Create: React.FC<CreateProps> = ({ username }) => {
+    const [activeDiscussion, setActiveDiscussion] = useState<DiscussionType | "">("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleCreateClick = (type: DiscussionType) => {
     setActiveDiscussion(type);
@@ -15,8 +19,40 @@ function Create() {
 
   const handleResetClick = () => {
     setActiveDiscussion("");
+    setMessage("");
   };
 
+  const handlePostDiscussion = async () => {
+    if (!message.trim()) {
+      alert("Message cannot be empty.");
+      return;
+    }
+  
+    setLoading(true);
+  
+    try {
+      const response = await fetch("/api/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, type: activeDiscussion, message }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) throw new Error(data.error || "Failed to post discussion");
+  
+      alert("Discussion posted successfully!");
+      handleResetClick();
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
   const discussionCards = [
     {
       type: "anonymous",
@@ -107,9 +143,15 @@ function Create() {
                   ? "Anonymous Discussion"
                   : "Public Discussion"}
               </h4>
-              <Textarea placeholder="Type your message here." />
+              <Textarea
+                placeholder="Type your message here."
+                value={message} // Bind state
+                onChange={(e) => setMessage(e.target.value)} // Update state
+              />
               <div className="flex gap-4">
-                <Button>Send message</Button>
+                <Button onClick={handlePostDiscussion} disabled={loading}>
+                  {loading ? "Posting..." : "Send Message"}
+                </Button>
                 <Button variant="outline" onClick={handleResetClick}>
                   Back
                 </Button>
