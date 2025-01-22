@@ -118,12 +118,12 @@ const Create: React.FC<CreateProps> = ({ username }) => {
 
   return (
     <div>
-<div className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-gray-50 py-6 sm:py-8">
+<div className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-gray-50 py-3 sm:py-8">
   <div className="flex justify-center items-center text-center">
     <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-2xl md:text-5xl p-5">
       <span className="block">
         Start your
-        <span className="mx-3 text-transparent bg-clip-text bg-gradient-to-tr to-cyan-500 from-blue-600">
+        <span className="px-3 text-transparent bg-clip-text bg-gradient-to-tr to-cyan-500 from-blue-600">
           Discussion
         </span>
         Today!
