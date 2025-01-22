@@ -102,6 +102,13 @@ export const DesktopSidebar = ({
     </>
   );
 };
+interface SidebarChildProps {
+  onClose?: () => void;
+}
+
+interface SidebarChildProps {
+  onClose?: () => void;
+}
 
 export const MobileSidebar = ({
   className,
@@ -117,12 +124,20 @@ export const MobileSidebar = ({
         )}
         {...props}
       >
-        <div className="flex justify-end z-20 w-full">
+        <div className="flex justify-start z-20 w-auto">
           <IconMenu2
             className="text-neutral-800 dark:text-neutral-200"
             onClick={() => setOpen(!open)}
           />
         </div>
+
+        <div className="flex items-center justify-end gap-2 w-auto">
+          <img src="/c.png" alt="Logo" className="h-6 w-6 object-contain" />
+          <span className="text-neutral-800 dark:text-neutral-200 font-semibold">
+            MyCommunity
+          </span>
+        </div>
+
         <AnimatePresence>
           {open && (
             <motion.div
@@ -144,7 +159,14 @@ export const MobileSidebar = ({
               >
                 <IconX />
               </div>
-              {children}
+
+              {React.Children.map(children, (child) =>
+                React.isValidElement<SidebarChildProps>(child)
+                  ? React.cloneElement(child, {
+                      onClose: () => setOpen(false), // Add onClose handler
+                    })
+                  : child
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -152,6 +174,8 @@ export const MobileSidebar = ({
     </>
   );
 };
+
+
 
 interface SidebarLinkProps {
   link: Links;
