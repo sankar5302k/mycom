@@ -15,6 +15,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import Create from "./appmain/Create";
+import Explore from "./appmain/Explore";
 
 // Define type for navigation links
 type NavLink = {
@@ -151,7 +152,7 @@ const username = searchParams?.get("username") || "Guest";
         {selectedSection === "Create" ? (
           <Create  username={username}  /> // Should render here
         ) : selectedSection === "Explore" ? (
-          <h1>Hello</h1>
+          <Explore></Explore>
         ) : (
           <DefaultContent />
         )}
