@@ -27,6 +27,7 @@ export default function Application() {
   const [open, setOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState<NavLink["label"]>("Create");
 
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div
@@ -67,26 +68,17 @@ const Logo = () => {
     </Link>
   );
 };
-
 const NavLinks = ({ setSelectedSection }: { setSelectedSection: (label: string) => void }) => {
-  const searchParams = useSearchParams();
-
-  const username = searchParams?.get("username") || "Guest";
-
   const navLinks: NavLink[] = [
     {
       label: "Create",
       href: "#",
-      icon: (
-        <IconPlus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
+      icon: <IconPlus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Explore",
       href: "#",
-      icon: (
-        <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
+      icon: <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
       label: "Med AI",
@@ -110,7 +102,7 @@ const NavLinks = ({ setSelectedSection }: { setSelectedSection: (label: string) 
         <SidebarLink
           key={idx}
           link={link}
-          onClick={() => setSelectedSection(link.label)}
+          onClick={() => setSelectedSection(link.label)} // Pass section selection
         />
       ))}
     </div>

@@ -116,11 +116,16 @@ export const MobileSidebar = ({
   ...props
 }: React.ComponentProps<"div">) => {
   const { open, setOpen } = useSidebar();
+
+  const handleClose = () => {
+    setOpen(false); // Close the sidebar
+  };
+
   return (
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
+          "h-15 px-6 py-6 flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
         )}
         {...props}
       >
@@ -131,8 +136,8 @@ export const MobileSidebar = ({
           />
         </div>
 
-        <div className="flex items-center justify-end gap-2 w-auto">
-          <img src="/c.png" alt="Logo" className="h-6 w-6 object-contain" />
+        <div className="flex items-center justify-center gap-2 w-auto flex-1">
+                    <img src="/c.png" alt="Logo" className="h-6 w-6 object-contain" />
           <span className="text-neutral-800 dark:text-neutral-200 font-semibold">
             MyCommunity
           </span>
@@ -163,7 +168,7 @@ export const MobileSidebar = ({
               {React.Children.map(children, (child) =>
                 React.isValidElement<SidebarChildProps>(child)
                   ? React.cloneElement(child, {
-                      onClose: () => setOpen(false), // Add onClose handler
+                      onClose: handleClose, // Pass onClose handler to children
                     })
                   : child
               )}
@@ -183,14 +188,19 @@ interface SidebarLinkProps {
   onClick?: () => void; // Add onClick prop here to handle the section selection
   props?: LinkProps;
 }
-
 export const SidebarLink = ({
   link,
   className,
-  onClick, // Accept onClick here
+  onClick,
   ...props
 }: SidebarLinkProps) => {
-  const { open, animate } = useSidebar();
+  const { open, setOpen, animate } = useSidebar(); // Access setOpen here
+
+  const handleClick = () => {
+    if (onClick) onClick(); // Call the passed onClick function (e.g., setSelectedSection)
+    setOpen(false); // Close the sidebar
+  };
+
   return (
     <Link
       href={link.href}
@@ -198,8 +208,8 @@ export const SidebarLink = ({
         "flex items-center justify-start gap-2 group/sidebar py-2",
         className
       )}
+      onClick={handleClick} // Trigger handleClick on link click
       {...props}
-      onClick={onClick} // Ensure onClick is passed through to the Link
     >
       {link.icon}
 
