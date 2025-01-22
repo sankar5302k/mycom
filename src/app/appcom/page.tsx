@@ -122,9 +122,9 @@ const UserProfile = () => {
           icon: (
             <Image
               src="/c.png"
-              className="h-7 w-7 flex-shrink-0 rounded-full"
-              width={50}
-              height={50}
+              className=" flex-shrink-0 rounded-full"
+              width={55}
+              height={55}
               alt="Avatar"
             />
           ),
