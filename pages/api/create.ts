@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       type,
       message: type === "anonymous" ? { msg: message } : { [username]: message },
       metadata: { area, district, city: state, country },
-      stats: { likes: 0, comments: [] },
+      stats: { likes: 0, comments: {} },
     };
 
     // Connect to MongoDB and insert the new post

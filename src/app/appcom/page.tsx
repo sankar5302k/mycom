@@ -152,7 +152,7 @@ const username = searchParams?.get("username") || "Guest";
         {selectedSection === "Create" ? (
           <Create  username={username}  /> // Should render here
         ) : selectedSection === "Explore" ? (
-          <Explore></Explore>
+          <Explore username={username}></Explore>
         ) : (
           <DefaultContent />
         )}
