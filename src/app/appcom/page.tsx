@@ -26,8 +26,8 @@ type NavLink = {
 
 export default function Application() {
   const [open, setOpen] = useState(false);
-  const [selectedSection, setSelectedSection] = useState<NavLink["label"]>("Create");
-
+  const [selectedSection, setSelectedSection] =
+    useState<NavLink["label"]>("Create");
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -69,17 +69,25 @@ const Logo = () => {
     </Link>
   );
 };
-const NavLinks = ({ setSelectedSection }: { setSelectedSection: (label: string) => void }) => {
+const NavLinks = ({
+  setSelectedSection,
+}: {
+  setSelectedSection: (label: string) => void;
+}) => {
   const navLinks: NavLink[] = [
     {
       label: "Create",
       href: "#",
-      icon: <IconPlus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: (
+        <IconPlus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
     },
     {
       label: "Explore",
       href: "#",
-      icon: <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+      icon: (
+        <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
     },
     {
       label: "Med AI",
@@ -111,27 +119,42 @@ const NavLinks = ({ setSelectedSection }: { setSelectedSection: (label: string) 
 };
 
 const UserProfile = () => {
-  const searchParams = useSearchParams();
-  const username = searchParams?.get("username") || "Guest";
+  const searchParams = useSearchParams(); // Always defined
+  const [username, setUsername] = React.useState("Guest");
 
+  React.useEffect(() => {
+    if (!searchParams) return; // Extra safety check (not needed but avoids TypeScript warnings)
+
+    const urlUsername = searchParams.get("username");
+
+    if (urlUsername) {
+      localStorage.setItem("username", urlUsername);
+      localStorage.setItem("country", searchParams.get("country") || "");
+      localStorage.setItem("state", searchParams.get("state") || "");
+      localStorage.setItem("district", searchParams.get("district") || "");
+      localStorage.setItem("area", searchParams.get("area") || "");
+      setUsername(urlUsername);
+    } else {
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) setUsername(storedUsername);
+    }
+  }, [searchParams]);
   return (
-    <div>
-      <SidebarLink
-        link={{
-          label: username,
-          href: "#",
-          icon: (
-            <Image
-              src="/c.png"
-              className=" flex-shrink-0 rounded-full"
-              width={55}
-              height={55}
-              alt="Avatar"
-            />
-          ),
-        }}
-      />
-    </div>
+    <SidebarLink
+      link={{
+        label: username,
+        href: "/profile", // Ensure it navigates to the profile page
+        icon: (
+          <Image
+            src="/c.png"
+            className="flex-shrink-0 rounded-full"
+            width={55}
+            height={55}
+            alt="Avatar"
+          />
+        ),
+      }}
+    />
   );
 };
 
@@ -142,17 +165,29 @@ type DashboardProps = {
 
 const Dashboard: React.FC<DashboardProps> = ({ selectedSection }) => {
   const searchParams = useSearchParams();
+  const [username, setUsername] = React.useState("Guest");
 
-const username = searchParams?.get("username") || "Guest";
+  React.useEffect(() => {
+    const urlUsername = searchParams?.get("username");
+    if (urlUsername) {
+      localStorage.setItem("username", urlUsername);
+      setUsername(urlUsername);
+    } else {
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername) setUsername(storedUsername);
+    }
+  }, [searchParams]);
   return (
-    
     <div className="flex flex-1">
-      <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700
-       bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full  overflow-y-auto"  style={{ maxHeight: "100vh" }}>
+      <div
+        className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700
+       bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full  overflow-y-auto"
+        style={{ maxHeight: "100vh" }}
+      >
         {selectedSection === "Create" ? (
-          <Create  username={username}  /> // Should render here
+          <Create username={username} /> // Should render here
         ) : selectedSection === "Explore" ? (
-          <Explore username={username}></Explore>
+          <Explore username={username} ></Explore>
         ) : (
           <DefaultContent />
         )}
