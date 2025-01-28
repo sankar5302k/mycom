@@ -1,3 +1,6 @@
+// Add this directive at the top of your file
+"use client";
+
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 
