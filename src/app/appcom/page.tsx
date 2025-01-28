@@ -139,6 +139,7 @@ const UserProfile = () => {
       if (storedUsername) setUsername(storedUsername);
     }
   }, [searchParams]);
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
 
