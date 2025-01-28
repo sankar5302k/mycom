@@ -140,6 +140,8 @@ const UserProfile = () => {
     }
   }, [searchParams]);
   return (
+    <Suspense fallback={<div>Loading...</div>}>
+
     <SidebarLink
       link={{
         label: username,
@@ -155,6 +157,7 @@ const UserProfile = () => {
         ),
       }}
     />
+    </Suspense>
   );
 };
 
