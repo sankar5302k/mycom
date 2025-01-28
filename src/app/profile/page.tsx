@@ -1,4 +1,4 @@
-// Add this directive at the top of your file
+// Add the "use client" directive at the top of the file to ensure this is a client-side component
 "use client";
 
 import { useSearchParams } from "next/navigation";
@@ -40,3 +40,4 @@ export default function ProfileComponent() {
     </Suspense>
   );
 }
+
