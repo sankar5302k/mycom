@@ -32,7 +32,18 @@ const Explore: React.FC<CreateProps> = ({ username }) => {
       setLoading(true);
       try {
         const response = await fetch(`/api/posts?page=${page}`);
-        const data: Post[] = await response.json();
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Fetched Data:", data); // Debugging log
+
+        if (!Array.isArray(data)) {
+          console.error("Expected an array but got:", data);
+          return; // Prevents setting invalid data
+        }
+
         setPosts((prev) => [...prev, ...data]);
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -51,7 +62,6 @@ const Explore: React.FC<CreateProps> = ({ username }) => {
   const toggleComments = (postId: string) => {
     setOpenComments((prev) => (prev === postId ? null : postId));
   };
-
   const toggleLike = async (postId: string) => {
     try {
       const response = await fetch("/api/like", {
@@ -59,26 +69,28 @@ const Explore: React.FC<CreateProps> = ({ username }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ postId, username, action: "like" }),
       });
-
+  
       if (response.ok) {
-        const updatedPosts = posts.map((post) => {
-          if (post._id === postId) {
-            const isLiked = post.stats.likedBy.includes(username);
-            return {
-              ...post,
-              stats: {
-                ...post.stats,
-                likes: isLiked ? post.stats.likes - 1 : post.stats.likes + 1,
-                likedBy: isLiked
-                  ? post.stats.likedBy.filter((user) => user !== username)
-                  : [...post.stats.likedBy, username],
-              },
-            };
-          }
-          return post;
-        });
-
-        setPosts(updatedPosts);
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  stats: {
+                    ...post.stats,
+                    likes: Array.isArray(post.stats.likedBy) && post.stats.likedBy.includes(username)
+                      ? post.stats.likes - 1
+                      : post.stats.likes + 1,
+                    likedBy: Array.isArray(post.stats.likedBy)
+                      ? post.stats.likedBy.includes(username)
+                        ? post.stats.likedBy.filter((user) => user !== username)
+                        : [...post.stats.likedBy, username]
+                      : [username], // Initialize likedBy if it's undefined
+                  },
+                }
+              : post
+          )
+        );
       } else {
         alert("Failed to toggle like");
       }
@@ -87,32 +99,40 @@ const Explore: React.FC<CreateProps> = ({ username }) => {
       console.error(error);
     }
   };
-
+  
   const handleCommentSubmit = async (postId: string) => {
     try {
       const response = await fetch("/api/cs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, comment: commentText, username, action: "comment" }),
+        body: JSON.stringify({
+          postId,
+          comment: commentText,
+          username,
+          action: "comment",
+        }),
       });
 
       if (response.ok) {
-        const updatedPosts = posts.map((post) => {
-          if (post._id === postId) {
-            const commentKey = post.type === "anonymous" ? `Anonymous_${Date.now()}` : username;
-            return {
-              ...post,
-              stats: {
-                ...post.stats,
-                comments: { ...post.stats.comments, [commentKey]: commentText },
-              },
-            };
-          }
-          return post;
-        });
-
-        setPosts(updatedPosts);
-        setCommentText(""); // Clear comment input
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  stats: {
+                    ...post.stats,
+                    comments: {
+                      ...post.stats.comments,
+                      [post.type === "anonymous"
+                        ? `Anonymous_${Date.now()}`
+                        : username]: commentText,
+                    },
+                  },
+                }
+              : post
+          )
+        );
+        setCommentText(""); // Clear input
       } else {
         alert("Failed to post comment");
       }
@@ -169,8 +189,9 @@ const Explore: React.FC<CreateProps> = ({ username }) => {
             >
               <IconHeart
                 className="h-5 w-5"
-                fill={post.stats.likedBy.includes(username) ? "red" : "none"}
-                stroke={post.stats.likedBy.includes(username) ? "red" : "currentColor"}
+                fill={Array.isArray(post.stats.likedBy) && post.stats.likedBy.includes(username) ? "red" : "none"}
+                stroke={Array.isArray(post.stats.likedBy) && post.stats.likedBy.includes(username) ? "red" : "currentColor"}
+
               />
               <span>Like {post.stats.likes}</span>
             </button>
@@ -195,19 +216,14 @@ const Explore: React.FC<CreateProps> = ({ username }) => {
                 }}
               >
                 <h3 className="text-lg font-bold mb-2">Add a comment</h3>
-                <div className="mb-4">
-                  <label className="block text-gray-700 font-bold mb-2">
-                    Comment
-                  </label>
-                  <textarea
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    placeholder="Enter your comment"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                  ></textarea>
-                </div>
+                <textarea
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  placeholder="Enter your comment"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                ></textarea>
                 <button
-                  className="bg-cyan-500 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  className="bg-cyan-500 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded"
                   type="submit"
                 >
                   Submit
@@ -218,14 +234,7 @@ const Explore: React.FC<CreateProps> = ({ username }) => {
         </div>
       ))}
 
-      {!loading && (
-        <button
-          onClick={loadMore}
-          className="block mx-auto mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full sm:w-auto"
-        >
-          Load More
-        </button>
-      )}
+      {!loading && <button onClick={loadMore}>Load More</button>}
       {loading && <p className="text-center text-gray-500">Loading...</p>}
     </div>
   );

@@ -91,7 +91,7 @@ const NavLinks = ({
     },
     {
       label: "Med AI",
-      href: "#",
+      href: "http://localhost:3001/",
       icon: (
         <IconAffiliate className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
@@ -139,9 +139,8 @@ const UserProfile = () => {
       if (storedUsername) setUsername(storedUsername);
     }
   }, [searchParams]);
-
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+
 
     <SidebarLink
       link={{
@@ -158,7 +157,6 @@ const UserProfile = () => {
         ),
       }}
     />
-    </Suspense>
   );
 };
 

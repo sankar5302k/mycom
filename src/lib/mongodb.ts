@@ -1,24 +1,31 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, MongoClientOptions } from "mongodb";
 
-const uri = process.env.MONGODB_URI || "";
-const options = {};
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+  console.error("❌ MongoDB URI is missing! Add it to .env.local");
+  throw new Error("MONGODB_URI is required in .env.local");
+}
+
+// Correct way to define options
+const options: MongoClientOptions = {
+  // You can add additional options here if needed
+};
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
-if (!uri) {
-  throw new Error("Please add your MongoDB URI to .env.local");
+declare global {
+  var _mongoClientPromise: Promise<MongoClient>;
 }
 
-// For development and hot-reloading environments
 if (process.env.NODE_ENV === "development") {
-  if (!(global as any)._mongoClientPromise) {
+  if (!global._mongoClientPromise) {
     client = new MongoClient(uri, options);
-    (global as any)._mongoClientPromise = client.connect();
+    global._mongoClientPromise = client.connect();
   }
-  clientPromise = (global as any)._mongoClientPromise;
+  clientPromise = global._mongoClientPromise;
 } else {
-  // For production environments
   client = new MongoClient(uri, options);
   clientPromise = client.connect();
 }
