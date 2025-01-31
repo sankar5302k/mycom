@@ -38,7 +38,7 @@ function Hero() {
             </h1>
 
             <p className="mx-auto mt-9 max-w-2xl text-lg tracking-tight text-slate-700 sm:mt-6">
-                <span className="inline-block">AI based social Platform for anonymous discussions and personalised Healthcares</span>
+                <span className="inline-block">A social Platform for anonymous discussions and public discussions</span>
 
             </p>
 

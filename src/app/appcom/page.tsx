@@ -89,20 +89,7 @@ const NavLinks = ({
         <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
-    {
-      label: "Med AI",
-      href: "http://localhost:3001/",
-      icon: (
-        <IconAffiliate className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
-      label: "Area Report",
-      href: "#",
-      icon: (
-        <IconMessageChatbot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
+   
   ];
 
   return (

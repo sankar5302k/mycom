@@ -11,8 +11,7 @@ export default function Home() {
 <Hero></Hero>
 <Ad></Ad>
 <Ex></Ex>
-<Medana></Medana>
-<Report></Report>
+
    </>
   );
 }
