@@ -78,7 +78,6 @@ const Register: React.FC = () => {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const response = await fetch("/api/otp", {
         method: "PUT",
@@ -91,7 +90,6 @@ const Register: React.FC = () => {
         alert(errorData.error || "Invalid or expired OTP");
         throw new Error(errorData.error || "Invalid or expired OTP");
       }
-
       setStep("location");
     } catch (error) {
       alert("OTP Verification Error:");
@@ -173,7 +171,6 @@ const Register: React.FC = () => {
       setLoading(false);
     }
   };
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-white text-black">
       <div className="flex flex-col md:flex-row items-center justify-center gap-10">
@@ -181,8 +178,6 @@ const Register: React.FC = () => {
         <div className="hidden md:block w-1/3 flex justify-center">
           <Image src="/c.png" alt="Logo" width={250} height={250} />
         </div>
-
-        {/* Tabs for Register/Login */}
         <div className="w-[400px]">
           <Tabs
             defaultValue={tab}
@@ -335,8 +330,6 @@ const Register: React.FC = () => {
                 )}
               </Suspense>
             </TabsContent>
-
-            {/* Login Form */}
             <TabsContent value="login">
               <Suspense fallback={<div>Loading login...</div>}>
                 <Card>
