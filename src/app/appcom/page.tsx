@@ -1,11 +1,7 @@
 "use client";
 import React, { useState, Suspense, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "../../components/ui/sidebar";
-import {
-  IconUser,
-  IconPlus,
-  IconUserBolt,
-} from "@tabler/icons-react";
+import { IconUser, IconPlus, IconUserBolt } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -23,7 +19,8 @@ type NavLink = {
 
 export default function Application() {
   const [open, setOpen] = useState(false);
-  const [selectedSection, setSelectedSection] = useState<NavLink["label"]>("Create");
+  const [selectedSection, setSelectedSection] =
+    useState<NavLink["label"]>("Create");
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -66,7 +63,11 @@ const Logo = () => {
   );
 };
 
-const NavLinks = ({ setSelectedSection }: { setSelectedSection: (label: string) => void }) => {
+const NavLinks = ({
+  setSelectedSection,
+}: {
+  setSelectedSection: (label: string) => void;
+}) => {
   const navLinks: NavLink[] = [
     { label: "Create", icon: <IconPlus className="h-5 w-5" /> },
     { label: "Explore", icon: <IconUserBolt className="h-5 w-5" /> },
@@ -85,7 +86,11 @@ const NavLinks = ({ setSelectedSection }: { setSelectedSection: (label: string) 
   );
 };
 
-const UserProfile = ({ setSelectedSection }: { setSelectedSection: (label: string) => void }) => {
+const UserProfile = ({
+  setSelectedSection,
+}: {
+  setSelectedSection: (label: string) => void;
+}) => {
   const searchParams = useSearchParams();
   const [username, setUsername] = React.useState("Guest");
 
@@ -144,7 +149,7 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedSection }) => {
         ) : selectedSection === "Explore" ? (
           <Explore username={username} />
         ) : selectedSection === "Profile" ? (
-          <Profile  />
+          <Profile />
         ) : (
           <DefaultContent />
         )}
@@ -200,6 +205,8 @@ const Profile = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editedMessage, setEditedMessage] = useState("");
   const router = useRouter();
 
   const loadMore = () => {
@@ -210,7 +217,9 @@ const Profile = () => {
     const fetchPosts = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/gp?username=${username}&page=${page}`);
+        const response = await fetch(
+          `/api/gp?username=${username}&page=${page}`
+        );
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -290,9 +299,11 @@ const Profile = () => {
                   ...post,
                   stats: {
                     ...post.stats,
-                    likes: Array.isArray(post.stats.likedBy) && post.stats.likedBy.includes(username)
-                      ? post.stats.likes - 1
-                      : post.stats.likes + 1,
+                    likes:
+                      Array.isArray(post.stats.likedBy) &&
+                      post.stats.likedBy.includes(username)
+                        ? post.stats.likes - 1
+                        : post.stats.likes + 1,
                     likedBy: Array.isArray(post.stats.likedBy)
                       ? post.stats.likedBy.includes(username)
                         ? post.stats.likedBy.filter((user) => user !== username)
@@ -354,6 +365,57 @@ const Profile = () => {
     }
   };
 
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const response = await fetch("/api/deletePost", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, username }),
+      });
+
+      if (response.ok) {
+        setPosts((prev) => prev.filter((post) => post._id !== postId));
+      } else {
+        alert("Failed to delete post");
+      }
+    } catch (error) {
+      alert("Error deleting post");
+      console.error(error);
+    }
+  };
+
+  const handleEditPost = async (postId: string) => {
+    try {
+      const response = await fetch("/api/editPost", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId, username, message: editedMessage }),
+      });
+
+      if (response.ok) {
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  message: {
+                    ...post.message,
+                    [Object.keys(post.message)[0]]: editedMessage,
+                  },
+                }
+              : post
+          )
+        );
+        setEditingPostId(null); // Exit edit mode
+      } else {
+        alert("Failed to edit post");
+      }
+    } catch (error) {
+      alert("Error editing post");
+      console.error(error);
+    }
+  };
+
   return (
     <div className="text-center p-10">
       <div className="flex justify-center">
@@ -366,7 +428,9 @@ const Profile = () => {
         />
       </div>
       <h1 className="text-2xl font-semibold">{username}</h1>
-      <p className="text-md text-gray-500 dark:text-gray-400">District: {district}</p>
+      <p className="text-md text-gray-500 dark:text-gray-400">
+        District: {district}
+      </p>
       <p className="text-md text-gray-500 dark:text-gray-400">Area: {area}</p>
       <br />
       <br />
@@ -390,17 +454,51 @@ const Profile = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-gray-900 dark:text-white">
-                      {post.type === "anonymous" ? "Anonymous" : Object.keys(post.message)[0]}
+                      {post.type === "anonymous"
+                        ? "Anonymous"
+                        : Object.keys(post.message)[0]}
                     </span>
                     <span className="text-sm text-gray-500">·</span>
-                    <span className="text-sm text-gray-500">{post.metadata.district}</span>
+                    <span className="text-sm text-gray-500">
+                      {post.metadata.district}
+                    </span>
                   </div>
+                  {username === Object.keys(post.message)[0] && (
+                    <div className="flex gap-2">
+                      <button
+                        className="text-sm text-gray-500 hover:text-blue-500"
+                        onClick={() => {
+                          setEditingPostId(post._id);
+                          setEditedMessage(
+                            post.message[Object.keys(post.message)[0]]
+                          );
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="text-sm text-gray-500 hover:text-red-500"
+                        onClick={() => handleDeletePost(post._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <p className="mt-2 text-gray-800 dark:text-gray-200 text-sm leading-relaxed">
-                  {post.type === "anonymous"
-                    ? post.message.msg ?? "No message available"
-                    : post.message[Object.keys(post.message)[0]] ?? "No message available"}
-                </p>
+                {editingPostId === post._id ? (
+                  <textarea
+                    className="w-full p-3 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-neutral-800 border rounded-lg focus:outline-none focus:ring focus:ring-cyan-500"
+                    value={editedMessage}
+                    onChange={(e) => setEditedMessage(e.target.value)}
+                  />
+                ) : (
+                  <p className="mt-2 text-gray-800 dark:text-gray-200 text-sm leading-relaxed">
+                    {post.type === "anonymous"
+                      ? post.message.msg ?? "No message available"
+                      : post.message[Object.keys(post.message)[0]] ??
+                        "No message available"}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -419,22 +517,47 @@ const Profile = () => {
               >
                 <IconHeart
                   className="h-5 w-5"
-                  fill={Array.isArray(post.stats.likedBy) && post.stats.likedBy.includes(username) ? "red" : "none"}
-                  stroke={Array.isArray(post.stats.likedBy) && post.stats.likedBy.includes(username) ? "red" : "currentColor"}
+                  fill={
+                    Array.isArray(post.stats.likedBy) &&
+                    post.stats.likedBy.includes(username)
+                      ? "red"
+                      : "none"
+                  }
+                  stroke={
+                    Array.isArray(post.stats.likedBy) &&
+                    post.stats.likedBy.includes(username)
+                      ? "red"
+                      : "currentColor"
+                  }
                 />
                 <span>Like {post.stats.likes}</span>
               </button>
+              {editingPostId === post._id && (
+                <button
+                  className="text-sm text-gray-500 hover:text-green-500"
+                  onClick={() => handleEditPost(post._id)}
+                >
+                  Save
+                </button>
+              )}
             </div>
 
             {/* Comment Section */}
             {openComments === post._id && (
               <div className="bg-gray-100 dark:bg-neutral-800 p-5 mt-5 rounded-lg shadow-inner">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Comments</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                  Comments
+                </h2>
                 <div className="flex flex-col gap-3">
                   {Object.entries(post.stats.comments).map(([key, value]) => (
-                    <div key={key} className="bg-white dark:bg-neutral-900 p-3 rounded-lg shadow">
+                    <div
+                      key={key}
+                      className="bg-white dark:bg-neutral-900 p-3 rounded-lg shadow"
+                    >
                       <h3 className="text-md font-semibold">{key}</h3>
-                      <p className="text-gray-700 dark:text-gray-300">{value}</p>
+                      <p className="text-gray-700 dark:text-gray-300">
+                        {value}
+                      </p>
                     </div>
                   ))}
                 </div>
