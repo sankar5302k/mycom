@@ -7,31 +7,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const username = req.query.username as string;
-    const limit = 10;
-    const skip = (page - 1) * limit;
+    const { username } = req.query;
+
+    if (!username) {
+      return res.status(400).json({ error: "Username is required" });
+    }
 
     const client = await clientPromise;
     const db = client.db("discussions");
 
-    // Fetch posts where user exists in message OR public posts
+    // Fetch only public posts posted by the specified user
     const posts = await db
       .collection("posts")
       .find({
-        $or: [
-          { type: "public" },
-          { [`message.${username}`]: { $exists: true } }
-        ],
+        type: "public",
+        [`message.${username}`]: { $exists: true }, // Ensure the message object contains the username
       })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
+      .sort({ createdAt: -1 }) // Sort by creation date in descending order
       .toArray();
 
     return res.status(200).json(posts);
   } catch (error) {
-    console.error("❌ Error fetching posts:", error);
+    console.error("❌ Error fetching user's public posts:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
