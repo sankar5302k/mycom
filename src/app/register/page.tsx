@@ -18,9 +18,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Your component goes here
 const Register: React.FC = () => {
   const router = useRouter();
-  const [step, setStep] = useState<"register" | "otp" | "location">("register");
+  //const [step, setStep] = useState<"register" | "otp" | "location">("register");
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<"register" | "login">("register");
+  const [step, setStep] = useState<
+    | "register"
+    | "otp"
+    | "location"
+    | "forgotPassword"
+    | "verifyForgotPasswordOtp"
+    | "resetPassword"
+    | "login"
+  >("register");
 
   const [userData, setUserData] = useState({
     username: "",
@@ -31,7 +40,116 @@ const Register: React.FC = () => {
     district: "",
     area: "",
   });
+  const [forgotPasswordData, setForgotPasswordData] = useState({
+    email: "",
+    otp: "",
+    newPassword: "",
+  });
 
+  const handleForgotPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setForgotPasswordData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      console.log("Sending OTP request...");
+      const response = await fetch("/api/otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotPasswordData.email }),
+      });
+
+      const responseText = await response.text(); // ✅ Debug raw response
+      console.log("Raw API Response:", responseText);
+
+      let errorData;
+      try {
+        errorData = JSON.parse(responseText); // ✅ Handle non-JSON responses
+      } catch (parseError) {
+        console.error("Failed to parse JSON response:", parseError);
+        throw new Error("Server error: Invalid response format");
+      }
+
+      if (!response.ok) {
+        console.error("Error sending OTP:", errorData);
+        alert(errorData.error || "Failed to send OTP");
+        throw new Error(errorData.error || "Failed to send OTP");
+      }
+
+      console.log("OTP request successful");
+      setStep("verifyForgotPasswordOtp");
+    } catch (error) {
+      console.error("OTP request failed:", error);
+      alert("Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyForgotPasswordOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/otp", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: forgotPasswordData.email,
+          otp: forgotPasswordData.otp,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.error || "Invalid or expired OTP");
+        throw new Error(errorData.error || "Invalid or expired OTP");
+      }
+
+      setStep("resetPassword");
+    } catch (error) {
+      alert("OTP Verification Error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: forgotPasswordData.email,
+          newPassword: forgotPasswordData.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.error || "Failed to reset password");
+        throw new Error(errorData.error || "Failed to reset password");
+      }
+
+      alert("Password reset successfully");
+      setStep("login");
+    } catch (error) {
+      alert("Password Reset Error");
+    } finally {
+      setLoading(false);
+    }
+  };
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
@@ -101,23 +219,23 @@ const Register: React.FC = () => {
   const handleLocationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-  
+
     try {
       const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         alert(errorData.error || "Registration failed");
         throw new Error(errorData.error || "Registration failed");
       }
-  
+
       const data = await response.json();
       console.log("User Registered:", data);
-  
+
       const queryParams = new URLSearchParams({
         username: userData.username,
         country: userData.country,
@@ -125,7 +243,7 @@ const Register: React.FC = () => {
         district: userData.district,
         area: userData.area,
       }).toString();
-  
+
       router.push(`/appcom?${queryParams}`);
     } catch (error) {
       alert("Registration Error");
@@ -361,6 +479,15 @@ const Register: React.FC = () => {
                         required
                       />
                     </div>
+                    <div className="text-right">
+                      <Button
+                        variant="link"
+                        onClick={() => setStep("forgotPassword")}
+                        className="text-sm text-blue-600"
+                      >
+                        Forgot Password?
+                      </Button>
+                    </div>
                   </CardContent>
                   <CardFooter>
                     <Button
@@ -371,6 +498,99 @@ const Register: React.FC = () => {
                       {loading ? "Logging in..." : "Login"}
                     </Button>
                   </CardFooter>
+                  {step === "forgotPassword" && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-center text-xl font-semibold">
+                          Forgot Password
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            name="email"
+                            type="email"
+                            value={forgotPasswordData.email}
+                            onChange={handleForgotPasswordChange}
+                            required
+                          />
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button
+                          onClick={handleForgotPasswordSubmit}
+                          className="w-full"
+                        >
+                          Send OTP
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  )}
+
+                  {step === "verifyForgotPasswordOtp" && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-center text-xl font-semibold">
+                          Verify OTP
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="otp">Enter OTP</Label>
+                          <Input
+                            id="otp"
+                            name="otp"
+                            type="text"
+                            maxLength={6}
+                            value={forgotPasswordData.otp}
+                            onChange={handleForgotPasswordChange}
+                            required
+                          />
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button
+                          onClick={handleVerifyForgotPasswordOtp}
+                          className="w-full"
+                        >
+                          Verify OTP
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  )}
+
+                  {step === "resetPassword" && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-center text-xl font-semibold">
+                          Reset Password
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="newPassword">New Password</Label>
+                          <Input
+                            id="newPassword"
+                            name="newPassword"
+                            type="password"
+                            value={forgotPasswordData.newPassword}
+                            onChange={handleForgotPasswordChange}
+                            required
+                          />
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button
+                          onClick={handleResetPasswordSubmit}
+                          className="w-full"
+                        >
+                          Reset Password
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  )}
                 </Card>
               </Suspense>
             </TabsContent>
